@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { messages, message } = req.body;
+  const { messages, message, pdfText } = req.body;
   let inputMessages = messages;
 
   if (!Array.isArray(inputMessages)) {
@@ -24,7 +24,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const result = await generate(inputMessages);
+    const result = await generate(inputMessages, pdfText);
     res.status(200).json({ message: result, messages: result });
   } catch (error) {
     console.error(error);

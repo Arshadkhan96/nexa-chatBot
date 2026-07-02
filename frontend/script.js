@@ -1,11 +1,14 @@
 const input = document.querySelector('#input');
 const chatContainer = document.querySelector('#chat-container');
 const askBtn = document.querySelector('#ask');
+const pdfInput = document.querySelector('#pdf-file');
 
 const messages = [];
+let pdfContext = '';
 
 askBtn.addEventListener('click', handleAsk);
 input.addEventListener('keydown', handleEnter);
+pdfInput.addEventListener('change', handlePdfUpload);
 
 function handleAsk() {
 
@@ -27,6 +30,32 @@ function handleEnter(e) {
         if (!text) return;
 
         generate(text);
+    }
+}
+
+async function handlePdfUpload() {
+    if (!pdfInput.files.length) {
+        return;
+    }
+
+    const file = pdfInput.files[0];
+    const formData = new FormData();
+    formData.append('pdf', file);
+
+    try {
+        const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error('Upload failed');
+        }
+
+        const result = await response.json();
+        pdfContext = result.text || '';
+    } catch (error) {
+        console.error(error);
     }
 }
 
@@ -126,7 +155,8 @@ async function callServer() {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            messages: recentMessages
+            messages: recentMessages,
+            pdfText: pdfContext
         })
     });
 

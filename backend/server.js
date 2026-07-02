@@ -1,21 +1,44 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import multer from 'multer';
+import pdf from 'pdf-parse';
 import { generate } from './chat-boat.js';
 import cors from 'cors';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const frontendPath = path.resolve(__dirname, '../frontend');
+const upload = multer({ storage: multer.memoryStorage() });
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static(frontendPath));
 
+// PDF upload endpoint
+app.post(['/upload', '/api/upload'], upload.single('pdf'), async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: 'No PDF uploaded' });
+    }
+
+    try {
+        const data = await pdf(req.file.buffer);
+        const text = data.text || '';
+
+        return res.json({
+            fileName: req.file.originalname,
+            text: text.trim()
+        });
+    } catch (err) {
+        console.error('PDF parse error:', err);
+        return res.status(500).json({ error: 'Failed to process PDF' });
+    }
+});
+
 // Main chat endpoint
 app.post(['/chat', '/api/chat'], async (req, res) => {
-    let { messages, message } = req.body;
+    let { messages, message, pdfText } = req.body;
 
     // Handle single message format
     if (!messages || !Array.isArray(messages)) {
@@ -32,7 +55,7 @@ app.post(['/chat', '/api/chat'], async (req, res) => {
     }
 
     try {
-        const result = await generate(messages);
+        const result = await generate(messages, pdfText);
 
         return res.json({
             messages: result,
