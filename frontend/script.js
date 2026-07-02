@@ -120,7 +120,7 @@ async function callServer() {
 
     const recentMessages = messages.slice(-20);
 
-    const response = await fetch('/chat', {
+    const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

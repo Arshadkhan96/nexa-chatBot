@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(express.static(frontendPath));
 
 // Main chat endpoint
-app.post('/chat', async (req, res) => {
+app.post(['/chat', '/api/chat'], async (req, res) => {
     let { messages, message } = req.body;
 
     // Handle single message format
