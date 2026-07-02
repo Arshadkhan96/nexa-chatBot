@@ -1,10 +1,17 @@
 import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { generate } from './chat-boat.js';
 import cors from 'cors';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const frontendPath = path.resolve(__dirname, '../frontend');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.static(frontendPath));
 
 // Main chat endpoint
 app.post('/chat', async (req, res) => {
@@ -48,6 +55,11 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Internal server error' });
 });
 
+// Serve the frontend for any other route
+app.get('*', (req, res) => {
+    res.sendFile(path.join(frontendPath, 'index.html'));
+});
+
 // Start server
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`✅ Nexa AI Server running on http://localhost:${PORT}`));
