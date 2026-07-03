@@ -6,6 +6,16 @@ const pdfInput = document.querySelector('#pdf-file');
 const messages = [];
 let pdfContext = '';
 
+function getApiUrl(path) {
+    const previewPorts = ['5500', '8000', '8080', '4173'];
+
+    if (previewPorts.includes(window.location.port)) {
+        return `http://127.0.0.1:3000${path}`;
+    }
+
+    return path;
+}
+
 askBtn.addEventListener('click', handleAsk);
 input.addEventListener('keydown', handleEnter);
 pdfInput.addEventListener('change', handlePdfUpload);
@@ -43,7 +53,7 @@ async function handlePdfUpload() {
     formData.append('pdf', file);
 
     try {
-        const response = await fetch('/api/upload', {
+        const response = await fetch(getApiUrl('/api/upload'), {
             method: 'POST',
             body: formData
         });
@@ -149,7 +159,7 @@ async function callServer() {
 
     const recentMessages = messages.slice(-20);
 
-    const response = await fetch('/api/chat', {
+    const response = await fetch(getApiUrl('/api/chat'), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
